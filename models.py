@@ -1,16 +1,17 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 class Entry(BaseModel):
     id: int
     amount: float
     name: str
-    comment: str
+    comment: Optional[str] = None
 
 
 class Income(Entry):
     isMonthly: bool
+
 
 
 class Expense(Entry):
