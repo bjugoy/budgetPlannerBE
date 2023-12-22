@@ -1,8 +1,34 @@
+import os.path
+
 from fastapi import FastAPI
+from sqlalchemy import create_engine, event, Engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+
 from models import FinancialAccount, Income, Expense
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
+#gebe damit nur den Pfad von diesem File an, den absoluten Pfad -J
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+#engine ist verantwortlich für Interaktion mit Datenbank(SQLite) -J
+engine = create_engine(f"sqlite:///{BASE_DIR}/db", echo=True)
+
+#sorgt dafür, dass immer die selbe session verwendet wird und nicht immer eine neue Verbindung aufgebaut werden muss -J
+session = scoped_session(
+    sessionmaker(
+        autoflush=False,
+        autocommit=False,
+        bind=engine,
+    )
+)
+
+#das ich Fremdschlüssel verwendet kann (ForeignKeys) -J
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection,connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 fin_acc = FinancialAccount(balance=0.0)
 incomes = fin_acc.incomes
