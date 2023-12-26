@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="- SQLAlchemy runtergeladen&#10;- databasemodels begonnen">
+    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="- 2 Datenbankmodelle erstellt für Income und Expenses&#10;- muss mir überlegen, wie es weiter geht.">
+      <change afterPath="$PROJECT_DIR$/testdaten_database.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database_models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/database_models/financials.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database_models/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/database_models/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,30 +36,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "HTTP Request.test_main | #3.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/Startklar/PycharmProjects/budgetPlannerBE/interpreter",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;HTTP Request.test_main | #3.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Startklar/PycharmProjects/budgetPlannerBE/interpreter&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "sqlite"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;sqlite&quot;
     ]
   }
-}]]></component>
-  <component name="RunManager">
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Startklar\PycharmProjects\budgetPlannerBE" />
+    </key>
+  </component>
+  <component name="RunManager" selected="FastAPI.budgetPlannerBE">
     <configuration name="test_main | #3" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/test_main.http" index="3" requestIdentifier="#3" runType="Run single request">
       <method v="2" />
     </configuration>
@@ -106,7 +113,12 @@
       <workItem from="1703283134091" duration="137000" />
       <workItem from="1703283293685" duration="25000" />
       <workItem from="1703283331570" duration="548000" />
-      <workItem from="1703368007127" duration="3966000" />
+      <workItem from="1703368007127" duration="7892000" />
+      <workItem from="1703424061754" duration="577000" />
+      <workItem from="1703425804677" duration="246000" />
+      <workItem from="1703587530070" duration="1567000" />
+      <workItem from="1703589186685" duration="76000" />
+      <workItem from="1703589317425" duration="458000" />
     </task>
     <task id="LOCAL-00001" summary="- SQLAlchemy runtergeladen&#10;- databasemodels begonnen">
       <option name="closed" value="true" />
@@ -116,7 +128,15 @@
       <option name="project" value="LOCAL" />
       <updated>1703283784387</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="- 2 Datenbankmodelle erstellt für Income und Expenses&#10;- muss mir überlegen, wie es weiter geht.">
+      <option name="closed" value="true" />
+      <created>1703372267425</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1703372267425</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -135,13 +155,14 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="- SQLAlchemy runtergeladen&#10;- databasemodels begonnen" />
-    <option name="LAST_COMMIT_MESSAGE" value="- SQLAlchemy runtergeladen&#10;- databasemodels begonnen" />
+    <MESSAGE value="- 2 Datenbankmodelle erstellt für Income und Expenses&#10;- muss mir überlegen, wie es weiter geht." />
+    <option name="LAST_COMMIT_MESSAGE" value="- 2 Datenbankmodelle erstellt für Income und Expenses&#10;- muss mir überlegen, wie es weiter geht." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/budgetPlannerBE$models.coverage" NAME="models Coverage Results" MODIFIED="1703271787081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/budgetPlannerBE$base.coverage" NAME="base Coverage Results" MODIFIED="1703368103869" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
-    <SUITE FILE_PATH="coverage/budgetPlannerBE$main.coverage" NAME="main Coverage Results" MODIFIED="1703368152449" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/budgetPlannerBE$budgetPlannerBE.coverage" NAME="budgetPlannerBE Coverage Results" MODIFIED="1703368849636" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$main.coverage" NAME="main Coverage Results" MODIFIED="1703377242095" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$budgetPlannerBE.coverage" NAME="budgetPlannerBE Coverage Results" MODIFIED="1703377250497" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/budgetPlannerBE$financials.coverage" NAME="financials Coverage Results" MODIFIED="1703370713713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
   </component>
 </project>

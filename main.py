@@ -23,6 +23,7 @@ session = scoped_session(
     )
 )
 
+
 #das ich Fremdschlüssel verwendet kann (ForeignKeys) -J
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection,connection_record):
