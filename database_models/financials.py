@@ -9,6 +9,7 @@ class Income(TimeStampedModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_of_income = Column(String(80))
     amount_of_income = Column(Float)
+    description = Column(String(200))
 
 class Expenses(TimeStampedModel):
     __tablename__ = "expenses"
@@ -16,5 +17,6 @@ class Expenses(TimeStampedModel):
     id= Column(Integer, primary_key=True, autoincrement=True)
     source_of_expenses = Column(String(80))
     amount_of_expense = Column(Float)
+    description = Column(String(200))
 
 

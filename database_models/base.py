@@ -3,11 +3,12 @@ import datetime
 from sqlalchemy import Column, DateTime
 from sqlalchemy.orm import declarative_base
 
-from main import session
+#muss ich angeblich löschen
+#from main import session
 
 
 Base = declarative_base()
-Base.query = session.query_property()
+#Base.query = session.query_property()
 
 class TimeStampedModel(Base):
     __abstract__ = True

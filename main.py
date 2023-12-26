@@ -4,7 +4,9 @@ from fastapi import FastAPI
 from sqlalchemy import create_engine, event, Engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from models import FinancialAccount, Income, Expense
+#man muss unterscheiden unter Income von BE und DB
+from models import FinancialAccount, Income as APIIncome, Expense as APIExpense
+from database_models.financials import Income as DBIncome, Expenses as DBExpense
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
@@ -55,8 +57,11 @@ async def get_incomes():
 
 
 @app.post("/incomes")
-async def create_income(income: Income):
-    fin_acc.incomes.append(income)
+async def create_income(income: APIIncome):
+    db_income = DBIncome(source_of_income=income.name, amount_of_income=income.amount, description=income.comment)
+    session.add(db_income)
+    session.commit()
+    #fin_acc.incomes.append(income)
     return {"message": f"Income {income.name} has been added"}
 
 
@@ -66,7 +71,7 @@ async def get_expenses():
 
 
 @app.post("/expenses")
-async def create_expense(expense: Expense):
+async def create_expense(expense: APIExpense):
     fin_acc.expenses.append(expense)
     return {"message": f"Expense {expense.name} has been added"}
 
