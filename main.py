@@ -8,6 +8,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from models import FinancialAccount, Income as APIIncome, Expense as APIExpense
 from database_models.financials import Income as DBIncome, Expenses as DBExpense
 from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
 
 #gebe damit nur den Pfad von diesem File an, den absoluten Pfad -J

@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="- testdaten erstellt für Datenbank (income, expense)">
+    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="- post-endpoint mit db verbunden.&#10;- DB-tabelle mit description erweitert">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database_models/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/database_models/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database_models/financials.py" beforeDir="false" afterPath="$PROJECT_DIR$/database_models/financials.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -64,7 +62,7 @@
       <recent name="C:\Users\Startklar\PycharmProjects\budgetPlannerBE" />
     </key>
   </component>
-  <component name="RunManager" selected="FastAPI.budgetPlannerBE">
+  <component name="RunManager">
     <configuration name="test_main | #3" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/test_main.http" index="3" requestIdentifier="#3" runType="Run single request">
       <method v="2" />
     </configuration>
@@ -122,7 +120,8 @@
       <workItem from="1703606770093" duration="5246000" />
       <workItem from="1703612755039" duration="296000" />
       <workItem from="1703613088319" duration="520000" />
-      <workItem from="1703613624650" duration="321000" />
+      <workItem from="1703613624650" duration="1531000" />
+      <workItem from="1703680884108" duration="140000" />
     </task>
     <task id="LOCAL-00001" summary="- SQLAlchemy runtergeladen&#10;- databasemodels begonnen">
       <option name="closed" value="true" />
@@ -148,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1703589782835</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="- post-endpoint mit db verbunden.&#10;- DB-tabelle mit description erweitert">
+      <option name="closed" value="true" />
+      <created>1703614068047</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1703614068047</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,13 +176,15 @@
     <MESSAGE value="- SQLAlchemy runtergeladen&#10;- databasemodels begonnen" />
     <MESSAGE value="- 2 Datenbankmodelle erstellt für Income und Expenses&#10;- muss mir überlegen, wie es weiter geht." />
     <MESSAGE value="- testdaten erstellt für Datenbank (income, expense)" />
-    <option name="LAST_COMMIT_MESSAGE" value="- testdaten erstellt für Datenbank (income, expense)" />
+    <MESSAGE value="- post-endpoint mit db verbunden.&#10;- DB-tabelle mit description erweitert" />
+    <option name="LAST_COMMIT_MESSAGE" value="- post-endpoint mit db verbunden.&#10;- DB-tabelle mit description erweitert" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/budgetPlannerBE$models.coverage" NAME="models Coverage Results" MODIFIED="1703271787081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/budgetPlannerBE$base.coverage" NAME="base Coverage Results" MODIFIED="1703610073769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
-    <SUITE FILE_PATH="coverage/budgetPlannerBE$main.coverage" NAME="main Coverage Results" MODIFIED="1703613315420" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$base.coverage" NAME="base Coverage Results" MODIFIED="1703680932067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$main.coverage" NAME="main Coverage Results" MODIFIED="1703680940919" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$models.coverage" NAME="models Coverage Results" MODIFIED="1703680945487" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$testdaten_database.coverage" NAME="testdaten_database Coverage Results" MODIFIED="1703680948692" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/budgetPlannerBE$budgetPlannerBE.coverage" NAME="budgetPlannerBE Coverage Results" MODIFIED="1703613685731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/budgetPlannerBE$financials.coverage" NAME="financials Coverage Results" MODIFIED="1703370713713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
+    <SUITE FILE_PATH="coverage/budgetPlannerBE$financials.coverage" NAME="financials Coverage Results" MODIFIED="1703680937206" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
   </component>
 </project>
