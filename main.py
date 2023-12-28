@@ -1,44 +1,49 @@
-import os.path
 
-from fastapi import FastAPI
-from sqlalchemy import create_engine, event, Engine
-from sqlalchemy.orm import scoped_session, sessionmaker
+from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy import event, Engine
+from sqlalchemy.orm import Session
+from database import session, engine
+from typing import Annotated
+from database_models import base
+import models
 
-#man muss unterscheiden unter Income von BE und DB
-from models import FinancialAccount, Income as APIIncome, Expense as APIExpense
-from database_models.financials import Income as DBIncome, Expenses as DBExpense
+# man muss unterscheiden unter Income von BE und DB
+from models import *
+from database_models.financials import Income, Expenses
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-#gebe damit nur den Pfad von diesem File an, den absoluten Pfad -J
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-#engine ist verantwortlich für Interaktion mit Datenbank(SQLite) -J
-engine = create_engine(f"sqlite:///{BASE_DIR}/db", echo=True)
-
-#sorgt dafür, dass immer die selbe session verwendet wird und nicht immer eine neue Verbindung aufgebaut werden muss -J
-session = scoped_session(
-    sessionmaker(
-        autoflush=False,
-        autocommit=False,
-        bind=engine,
-    )
-)
-
-
-#das ich Fremdschlüssel verwendet kann (ForeignKeys) -J
+# das ich Fremdschlüssel verwendet kann (ForeignKeys) -J
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection,connection_record):
+def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
-fin_acc = FinancialAccount(balance=0.0)
-incomes = fin_acc.incomes
-expenses = fin_acc.expenses
 
-#avoid cors error
+# gibt eine database session zurück
+def get_db():
+    db = session
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# database session
+db_dependency = Annotated[Session, Depends(get_db)]
+
+
+# erstellt tabellen
+base.Base.metadata.create_all(bind=engine)
+
+fin_acc = FinancialAccount(balance=0.0)
+
+
+# avoid cors error
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -47,39 +52,54 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 
 @app.get("/incomes")
-async def get_incomes():
+async def read_incomes(db: db_dependency, skip: int = 0, limit: int = 100):
+    incomes = db.query(Income).offset(skip).limit(limit).all()
     return {"incomes": incomes}
 
 
-@app.post("/incomes")
-async def create_income(income: APIIncome):
-    db_income = DBIncome(source_of_income=income.name, amount_of_income=income.amount, description=income.comment)
-    session.add(db_income)
-    session.commit()
-    #fin_acc.incomes.append(income)
-    return {"message": f"Income {income.name} has been added"}
+@app.post("/incomes", response_model=IncomeModel)
+async def create_income(income: IncomeBase, db: db_dependency):
+    db_income = Income(name=income.name,
+                       amount=income.amount,
+                       description=income.description,
+                       isMonthly=income.isMonthly,
+                       category=income.category)
+    db.add(db_income)
+    db.commit()
+    db.refresh(db_income)
+    return db_income
 
 
 @app.get("/expenses")
-async def get_expenses():
+async def read_expenses(db: db_dependency, skip: int = 0, limit: int = 100):
+    expenses = db.query(Expenses).offset(skip).limit(limit).all()
     return {"expenses": expenses}
 
 
-@app.post("/expenses")
-async def create_expense(expense: APIExpense):
-    fin_acc.expenses.append(expense)
+@app.post("/expenses", response_model=ExpenseModel)
+async def create_expense(expense: ExpenseBase, db: db_dependency):
+    db_expense = Expenses(name=expense.name,
+                          amount=expense.amount,
+                          description=expense.description,
+                          isMonthly=expense.isMonthly,
+                          category=expense)
+    db.add(db_expense)
+    db.commit()
+    db.refresh(db_expense)
     return {"message": f"Expense {expense.name} has been added"}
 
 
 @app.get("/balance")
-async def get_balance():
-    total_income = sum(income.amount for income in fin_acc.incomes)
-    total_expense = sum(expense.amount for expense in fin_acc.expenses)
-    current_balance = total_income - total_expense
-    return {"balance": current_balance}
+async def get_balance(db: db_dependency):
+    incomes = db.query(Income).all()
+    expenses = db.query(Expenses).all()
+
+    balance = fin_acc.get_balance(expenses, incomes)
+    return {"balance": balance}

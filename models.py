@@ -3,25 +3,39 @@ from typing import List, Optional
 
 
 class Entry(BaseModel):
-    id: int
-    amount: float
     name: str
-    comment: Optional[str] = None
+    amount: float
+    description: Optional[str] = None
 
 
-class Income(Entry):
+class IncomeBase(Entry):
     isMonthly: bool
+    category: Optional[str] = None
 
 
+class IncomeModel(IncomeBase):
+    id: int
 
-class Expense(Entry):
+    class Config:
+        orm_mode = True
+
+
+class ExpenseBase(Entry):
     isMonthly: bool
+    category: Optional[str] = None
+
+
+class ExpenseModel(ExpenseBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 
 class FinancialAccount(BaseModel):
     balance: float
-    expenses: List[Expense] = []
-    incomes: List[Income] = []
+    expenses: List[ExpenseBase] = []
+    incomes: List[IncomeBase] = []
 
     @staticmethod
     def get_balance(expenses, incomes):
