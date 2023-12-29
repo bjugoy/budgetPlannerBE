@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
 
 from database_models.base import TimeStampedModel
+from database import Base
 
 
 class Income(TimeStampedModel):
@@ -24,4 +25,21 @@ class Expenses(TimeStampedModel):
     isMonthly = Column(Boolean, default=True)
     category = Column(String)
 
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String)
+    email = Column(String)
+    first_name = Column(String)
+    last_name = Column(String)
+    password = Column(String)
+
+
+class Session(Base):
+    __tablename__ = "sessions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(Integer)
 
