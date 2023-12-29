@@ -1,0 +1,249 @@
+Index: models.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from pydantic import BaseModel\r\nfrom typing import List\r\n\r\n\r\nclass Entry(BaseModel):\r\n    id: int\r\n    amount: float\r\n    name: str\r\n    comment: str\r\n\r\n\r\nclass Income(Entry):\r\n    isMonthly: bool\r\n\r\n\r\nclass Expense(Entry):\r\n    isMonthly: bool\r\n\r\n\r\nclass FinancialAccount(BaseModel):\r\n    balance: float\r\n    expenses: List[Expense] = []\r\n    incomes: List[Income] = []\r\n\r\n    @staticmethod\r\n    def get_balance(expenses, incomes):\r\n\r\n        total_expenses = sum(expense.amount for expense in expenses)\r\n        total_incomes = sum(income.amount for income in incomes)\r\n\r\n        return total_incomes - total_expenses\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/models.py b/models.py
+--- a/models.py	
++++ b/models.py	
+@@ -1,3 +1,5 @@
++from enum import Enum
++
+ from pydantic import BaseModel
+ from typing import List
+ 
+@@ -9,12 +11,34 @@
+     comment: str
+ 
+ 
++class IncomeCategory(Enum):
++    SALARY = "Salary"
++    INVESTMENT_DIVIDENDS = "Investment"
++    CAPITAL_GAINS = "Capital Gains"
++    ADDITIONAL_INCOME = "Additional Income"
++
++
++class ExpenseCategory(Enum):
++    FOOD = "Food"
++    BILLS = "Bills"
++    SUBSCRIPTIONS = "Subscriptions"
++    GROCERIES = "Groceries"
++    MEDICINE = "Medicine"
++    INVESTMENTS = "Investments"
++    CLOTHING = "Clothing"
++    RENT = "Rent"
++    INSURANCE = "Insurance"
++    CAR = "Car"
++
++
+ class Income(Entry):
+     isMonthly: bool
++    category: IncomeCategory
+ 
+ 
+ class Expense(Entry):
+     isMonthly: bool
++    category: ExpenseCategory
+ 
+ 
+ class FinancialAccount(BaseModel):
+@@ -28,4 +52,18 @@
+         total_expenses = sum(expense.amount for expense in expenses)
+         total_incomes = sum(income.amount for income in incomes)
+ 
+-        return total_incomes - total_expenses
++        return round(total_incomes - total_expenses, 2)
++
++
++class User(BaseModel):
++    username: str
++    password: str
++    accounts: List[FinancialAccount] = []
++
++
++class Authentication(BaseModel):
++    email: str
++    firstName: str
++    lastName: str
++    username: str
++    password: str
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from fastapi import FastAPI\r\nfrom models import FinancialAccount, Income, Expense\r\n\r\napp = FastAPI()\r\n\r\n\r\nfin_acc = FinancialAccount(balance=0.0)\r\nincomes = fin_acc.incomes\r\nexpenses = fin_acc.expenses\r\n\r\n\r\n@app.get(\"/\")\r\ndef read_root():\r\n    return {\"Hello\": \"World\"}\r\n\r\n\r\n@app.get(\"/incomes\")\r\nasync def get_incomes():\r\n    return {\"incomes\": incomes}\r\n\r\n\r\n@app.post(\"/incomes\")\r\ndef create_income(income: Income):\r\n    incomes.append(income)\r\n    return {\"message\": f\"Income {income.name} has been added\"}\r\n\r\n\r\n@app.get(\"/expenses\")\r\nasync def get_expenses():\r\n    return {\"expenses\": expenses}\r\n\r\n\r\n@app.post(\"/expenses\")\r\ndef create_income(expense: Expense):\r\n    expenses.append(expense)\r\n    return {\"message\": f\"Expense {expense.name} has been added\"}\r\n\r\n\r\n@app.get(\"/balance\")\r\nasync def get_balance():\r\n\r\n    balance = fin_acc.get_balance(expenses, incomes)\r\n\r\n    return {\"balance\": balance}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	
++++ b/main.py	
+@@ -19,8 +19,9 @@
+     return {"incomes": incomes}
+ 
+ 
++# for now parameters are defined in JSON request body
+ @app.post("/incomes")
+-def create_income(income: Income):
++async def create_income(income: Income):
+     incomes.append(income)
+     return {"message": f"Income {income.name} has been added"}
+ 
+@@ -31,7 +32,7 @@
+ 
+ 
+ @app.post("/expenses")
+-def create_income(expense: Expense):
++async def create_income(expense: Expense):
+     expenses.append(expense)
+     return {"message": f"Expense {expense.name} has been added"}
+ 
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"738ef8d1-8b84-4154-b26b-55113f43bb44\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/main.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/main.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/models.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/models.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/test_main.http\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/test_main.http\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"FastAPI main\" />\r\n        <option value=\"FastAPI test_main\" />\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 2\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2ZoviZMgh2eLbR0JBdm8hVf6uXN\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"HTTP Request.test_main | #3.executor\": \"Run\",\r\n    \"RunOnceActivity.OpenProjectViewOnStart\": \"true\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"git-widget-placeholder\": \"master\",\r\n    \"ignore.virus.scanning.warn.message\": \"true\",\r\n    \"node.js.detected.package.eslint\": \"true\",\r\n    \"node.js.detected.package.tslint\": \"true\",\r\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\r\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\r\n    \"nodejs_package_manager_path\": \"npm\",\r\n    \"vue.rearranger.settings.migration\": \"true\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RunManager\" selected=\"FastAPI.budgetPlannerBE\">\r\n    <configuration name=\"test_main | #3\" type=\"HttpClient.HttpRequestRunConfigurationType\" factoryName=\"HTTP Request\" temporary=\"true\" nameIsGenerated=\"true\" path=\"$PROJECT_DIR$/test_main.http\" index=\"3\" requestIdentifier=\"#3\" runType=\"Run single request\">\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"budgetPlannerBE\" type=\"Python.FastAPI\">\r\n      <option name=\"file\" value=\"$PROJECT_DIR$/main.py\" />\r\n      <module name=\"budgetPlannerBE\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"false\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <EXTENSION ID=\"PythonCoverageRunConfigurationExtension\" runner=\"coverage.py\" />\r\n      <option name=\"launchJavascriptDebuger\" value=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"HTTP Request.test_main | #3\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-python-sdk-7a29c1521ef0-c986f194a52a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.11799.298\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"738ef8d1-8b84-4154-b26b-55113f43bb44\" name=\"Changes\" comment=\"\" />\r\n      <created>1703101374212</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1703101374212</updated>\r\n      <workItem from=\"1703101466386\" duration=\"234000\" />\r\n      <workItem from=\"1703101743507\" duration=\"2701000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	
++++ b/.idea/workspace.xml	
+@@ -4,7 +4,7 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="">
++    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="balance calculation possible">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+@@ -26,6 +26,23 @@
+   </component>
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++  </component>
++  <component name="GitHubPullRequestSearchHistory">{
++  &quot;lastFilter&quot;: {
++    &quot;state&quot;: &quot;OPEN&quot;,
++    &quot;assignee&quot;: &quot;bjugoy&quot;
++  }
++}</component>
++  <component name="GithubPullRequestsUISettings">
++    <option name="selectedUrlAndAccountId">
++      <UrlAndAccount>
++        <option name="accountId" value="e8d94776-0692-456c-bad6-7929a9af51e6" />
++        <option name="url" value="https://github.com/bjugoy/budgetPlannerBE.git" />
++      </UrlAndAccount>
++    </option>
++  </component>
++  <component name="ProblemsViewState">
++    <option name="selectedTabId" value="CurrentFile" />
+   </component>
+   <component name="ProjectColorInfo">{
+   &quot;associatedIndex&quot;: 2
+@@ -36,22 +53,27 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "HTTP Request.test_main | #3.executor": "Run",
+-    "RunOnceActivity.OpenProjectViewOnStart": "true",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "git-widget-placeholder": "master",
+-    "ignore.virus.scanning.warn.message": "true",
+-    "node.js.detected.package.eslint": "true",
+-    "node.js.detected.package.tslint": "true",
+-    "node.js.selected.package.eslint": "(autodetect)",
+-    "node.js.selected.package.tslint": "(autodetect)",
+-    "nodejs_package_manager_path": "npm",
+-    "vue.rearranger.settings.migration": "true"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;HTTP Request.test_main | #2.executor&quot;: &quot;Run&quot;,
++    &quot;HTTP Request.test_main | #3.executor&quot;: &quot;Run&quot;,
++    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
++    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
++    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
++    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="RunManager" selected="FastAPI.budgetPlannerBE">
++    <configuration name="test_main | #2" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/test_main.http" index="2" requestIdentifier="#2" runType="Run single request">
++      <method v="2" />
++    </configuration>
+     <configuration name="test_main | #3" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/test_main.http" index="3" requestIdentifier="#3" runType="Run single request">
+       <method v="2" />
+     </configuration>
+@@ -73,6 +95,9 @@
+     <recent_temporary>
+       <list>
+         <item itemvalue="HTTP Request.test_main | #3" />
++        <item itemvalue="HTTP Request.test_main | #2" />
++        <item itemvalue="HTTP Request.test_main | #2" />
++        <item itemvalue="HTTP Request.test_main | #3" />
+       </list>
+     </recent_temporary>
+   </component>
+@@ -92,11 +117,50 @@
+       <option name="presentableId" value="Default" />
+       <updated>1703101374212</updated>
+       <workItem from="1703101466386" duration="234000" />
+-      <workItem from="1703101743507" duration="2701000" />
++      <workItem from="1703101743507" duration="9082000" />
++      <workItem from="1703166576969" duration="2102000" />
++      <workItem from="1703601164767" duration="1096000" />
++      <workItem from="1703611392945" duration="799000" />
+     </task>
++    <task id="LOCAL-00001" summary="balance calculation possible">
++      <option name="closed" value="true" />
++      <created>1703108028200</created>
++      <option name="number" value="00001" />
++      <option name="presentableId" value="LOCAL-00001" />
++      <option name="project" value="LOCAL" />
++      <updated>1703108028200</updated>
++    </task>
++    <option name="localTasksCounter" value="2" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+     <option name="version" value="3" />
+   </component>
++  <component name="Vcs.Log.Tabs.Properties">
++    <option name="TAB_STATES">
++      <map>
++        <entry key="MAIN">
++          <value>
++            <State>
++              <option name="FILTERS">
++                <map>
++                  <entry key="branch">
++                    <value>
++                      <list>
++                        <option value="master" />
++                      </list>
++                    </value>
++                  </entry>
++                </map>
++              </option>
++            </State>
++          </value>
++        </entry>
++      </map>
++    </option>
++  </component>
++  <component name="VcsManagerConfiguration">
++    <MESSAGE value="balance calculation possible" />
++    <option name="LAST_COMMIT_MESSAGE" value="balance calculation possible" />
++  </component>
+ </project>
+\ No newline at end of file

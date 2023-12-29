@@ -1,13 +1,14 @@
-
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Cookie
+from fastapi.security import OAuth2PasswordBearer
+import bcrypt
 from sqlalchemy import event, Engine
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
+
 from database import session, engine
 from typing import Annotated
 from database_models import base
-import models
 
-# man muss unterscheiden unter Income von BE und DB
 from models import *
 from database_models.financials import Income, Expenses
 
@@ -33,7 +34,8 @@ def get_db():
         db.close()
 
 
-# database session
+# db_dependency ist vom Typ Session
+# ruft get_db auf
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
@@ -78,6 +80,7 @@ async def create_income(income: IncomeBase, db: db_dependency):
 
 
 @app.get("/expenses")
+# skip = 0 --> keine Reihe wird übersprungen bei offset()
 async def read_expenses(db: db_dependency, skip: int = 0, limit: int = 100):
     expenses = db.query(Expenses).offset(skip).limit(limit).all()
     return {"expenses": expenses}
@@ -103,3 +106,91 @@ async def get_balance(db: db_dependency):
 
     balance = fin_acc.get_balance(expenses, incomes)
     return {"balance": balance}
+
+
+# ----- SESSION MANAGEMENT -----
+
+class Session(BaseModel):
+    session_id: int
+    username: str
+
+
+users = []
+sessions = []
+next_session_id = 1
+
+
+@app.get("/users", response_model=List[User])
+async def read_users():
+    return users
+
+
+@app.get("/sessions", response_model=List[Session])
+async def read_sessions():
+    return sessions
+
+
+@app.post("/login")
+async def login(authentication: Authentication):
+    global next_session_id
+
+    stored_user = next((u for u in users if u.username == authentication.username), None)
+
+    if not stored_user or not bcrypt.checkpw(authentication.password.encode('utf-8'),
+                                             stored_user.password.encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    existing_session = next((s for s in sessions if s.username == stored_user.username), None)
+
+    if existing_session:
+        response = {"message": "Login successful"}
+    else:
+        new_session_id = next_session_id
+        next_session_id += 1
+
+        new_session = Session(session_id=new_session_id, username=stored_user.username)
+        sessions.append(new_session)
+
+        response = {"message": "Login successful"}
+
+        response_headers = {"Set-Cookie": f"session_id={new_session_id}; HttpOnly"}
+        return JSONResponse(content=response, headers=response_headers)
+
+    return response
+
+
+@app.post("/register")
+async def register(user: User):
+    # Check if username is already taken
+    if any(u.username == user.username for u in users):
+        raise HTTPException(status_code=400, detail="Username already taken")
+
+    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+
+    new_user = User(
+        username=user.username,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        password=hashed_password,
+        accounts=[]
+    )
+
+    users.append(new_user)
+
+    response = {"message": "Registration successful"}
+    return response
+
+
+@app.post("/logout")
+async def logout(session_id: int = Cookie(None)):
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    session_index = next((i for i, s in enumerate(sessions) if s.session_id == session_id), None)
+
+    if session_index is not None:
+        sessions.pop(session_index)
+
+    response = {"message": "Logged out successfully"}
+    return response
