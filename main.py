@@ -72,7 +72,7 @@ async def create_income(income: IncomeBase, db: db_dependency):
                        amount=income.amount,
                        description=income.description,
                        isMonthly=income.isMonthly,
-                       category=income.category)
+                       category=income.category.value)
     db.add(db_income)
     db.commit()
     db.refresh(db_income)
@@ -92,19 +92,22 @@ async def create_expense(expense: ExpenseBase, db: db_dependency):
                           amount=expense.amount,
                           description=expense.description,
                           isMonthly=expense.isMonthly,
-                          category=expense)
+                          category=expense.category.value)
     db.add(db_expense)
     db.commit()
     db.refresh(db_expense)
-    return {"message": f"Expense {expense.name} has been added"}
+    return db_expense
 
 
 @app.get("/balance")
 async def get_balance(db: db_dependency):
-    incomes = db.query(Income).all()
-    expenses = db.query(Expenses).all()
+    incomes = [income.amount for income in db.query(Income).all()]
+    expenses = [expense.amount for expense in db.query(Expenses).all()]
 
-    balance = fin_acc.get_balance(expenses, incomes)
+    total_income = sum(incomes)
+    total_expense = sum(expenses)
+
+    balance = total_income - total_expense
     return {"balance": balance}
 
 
