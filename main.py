@@ -10,7 +10,7 @@ from typing import Annotated
 from database_models import base
 
 from models import *
-from database_models.financials import Income, Expenses
+from database_models.financials import Income, Expenses, User, FinancialAccount
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -42,7 +42,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 # erstellt tabellen
 base.Base.metadata.create_all(bind=engine)
 
-fin_acc = FinancialAccount(balance=0.0)
+fin_acc = FinancialAccountBase(balance=0.0)
 
 
 # avoid cors error
@@ -111,20 +111,45 @@ async def get_balance(db: db_dependency):
     return {"balance": balance}
 
 
+@app.post("/users/{user_id}/financial-accounts", response_model=FinancialAccountModel)
+async def add_financial_account_to_user(
+    user_id: int,
+    financial_account: FinancialAccountBase,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Check if the user exists
+        existing_user = db.query(UserBase).filter(UserBase.id == user_id).first()
+        if not existing_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Create the financial account and associate it with the user
+        db_financial_account = FinancialAccount(user_id=existing_user.id,
+                                                balance=financial_account.balance)
+        db.add(db_financial_account)
+        db.commit()
+        db.refresh(db_financial_account)
+
+        return {"status": "success", "message": "Financial account added successfully", "data": db_financial_account}
+
+    except Exception as e:
+        return {"status": "error", "message": f"An error occurred: {str(e)}"}
+
+
 # ----- SESSION MANAGEMENT -----
 
 class Session(BaseModel):
     session_id: int
-    username: str
+    user_id: str
 
 
-users = []
 sessions = []
 next_session_id = 1
 
 
-@app.get("/users", response_model=List[User])
-async def read_users():
+@app.get("/users", response_model=List[UserBase])
+async def read_users(db: Session = Depends(get_db)):
+    users = db.query(UserBase).all()
     return users
 
 
@@ -134,16 +159,16 @@ async def read_sessions():
 
 
 @app.post("/login")
-async def login(authentication: Authentication):
+async def login(authentication: Authentication, db: Session = Depends(get_db)):
     global next_session_id
 
-    stored_user = next((u for u in users if u.username == authentication.username), None)
+    stored_user = db.query(UserBase).filter(UserBase.username == authentication.username).first()
 
     if not stored_user or not bcrypt.checkpw(authentication.password.encode('utf-8'),
                                              stored_user.password.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    existing_session = next((s for s in sessions if s.username == stored_user.username), None)
+    existing_session = next((s for s in sessions if s.user_id == stored_user.id), None)
 
     if existing_session:
         response = {"message": "Login successful"}
@@ -151,7 +176,7 @@ async def login(authentication: Authentication):
         new_session_id = next_session_id
         next_session_id += 1
 
-        new_session = Session(session_id=new_session_id, username=stored_user.username)
+        new_session = Session(session_id=new_session_id, user_id=stored_user.id)
         sessions.append(new_session)
 
         response = {"message": "Login successful"}
@@ -162,10 +187,11 @@ async def login(authentication: Authentication):
     return response
 
 
-@app.post("/register")
-async def register(user: User):
+@app.post("/register", response_model=UserModel)
+async def register(user: UserBase, db: Session = Depends(get_db)):
     # Check if username is already taken
-    if any(u.username == user.username for u in users):
+    existing_user = db.query(User).filter(User.username == user.username).first()
+    if existing_user:
         raise HTTPException(status_code=400, detail="Username already taken")
 
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
@@ -175,14 +201,13 @@ async def register(user: User):
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
-        password=hashed_password,
-        accounts=[]
+        password=hashed_password
     )
 
-    users.append(new_user)
+    db.add(new_user)
+    db.commit()
 
-    response = {"message": "Registration successful"}
-    return response
+    return new_user
 
 
 @app.post("/logout")
@@ -197,3 +222,15 @@ async def logout(session_id: int = Cookie(None)):
 
     response = {"message": "Logged out successfully"}
     return response
+
+
+def get_current_active_user(session_id: int = Cookie(None), db: Session = Depends(get_db)):
+    active_session = next((s for s in sessions if s.session_id == session_id), None)
+    if not active_session:
+        raise HTTPException(status_code=401, detail="Not logged in")
+
+    active_user = db.query(UserBase).filter(UserBase.id == active_session.user_id).first()
+    if not active_user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return active_user

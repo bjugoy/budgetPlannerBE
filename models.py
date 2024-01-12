@@ -46,6 +46,7 @@ class ExpenseBase(Entry):
     category: Optional[ExpenseCategory] = None
 
 
+# ___Model for Database and response model of endpoint
 class ExpenseModel(ExpenseBase):
     id: int
 
@@ -53,27 +54,32 @@ class ExpenseModel(ExpenseBase):
         orm_mode = True
 
 
-class FinancialAccount(BaseModel):
+class FinancialAccountBase(BaseModel):
     balance: float
     expenses: List[ExpenseBase] = []
     incomes: List[IncomeBase] = []
 
-    @staticmethod
-    def get_balance(expenses, incomes):
 
-        total_expenses = sum(expense.amount for expense in expenses)
-        total_incomes = sum(income.amount for income in incomes)
+class FinancialAccountModel(FinancialAccountBase):
+    id: int
 
-        return total_incomes - total_expenses
+    class Config:
+        orm_mode = True
 
 
-class User(BaseModel):
+class UserBase(BaseModel):
     username: str
     email: str
     first_name: str
     last_name: str
     password: str
-    accounts: List[str] = []
+
+
+class UserModel(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 
 class Authentication(BaseModel):
