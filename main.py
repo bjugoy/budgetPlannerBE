@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from fastapi import FastAPI, HTTPException, Depends, Cookie
 from fastapi.security import OAuth2PasswordBearer
 import bcrypt
@@ -6,7 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from database import session, engine
-from typing import Annotated
+from typing import Annotated, Type, Union
 from database_models import base
 
 from models import *
@@ -67,6 +69,39 @@ def get_current_user(db: db_dependency, session_id: int = Cookie(None)):
         raise HTTPException(status_code=401, detail="Invalid session ID")
 
 
+def get_financial_records( # alle parameter
+    db: db_dependency,
+    model: Type[Union[Income, Expenses]],
+    current_user: User,
+    is_monthly: Optional[bool] = None,
+    category: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # zuerst nach user filtern, dann optional (if) nach is_monthly
+    query = db.query(model).filter_by(user_id=current_user.id)
+    if is_monthly is not None:
+        query = query.filter_by(isMonthly=is_monthly)
+
+    if category:
+        query = query.filter_by(category=category)
+
+    # Apply offset and limit
+    records = query.offset(skip).limit(limit).all()
+    return records or []
+
+
+def convert_category(category_str: str):
+    # Replace spaces with underscores and convert to uppercase
+    cleaned_category = category_str.replace(" ", "_").upper()
+
+    # Use getattr to get the corresponding enum value
+    return getattr(IncomeCategory, cleaned_category, None)
+
+
 # ----- GET ENDPOINTS -----
 @app.get("/")
 def read_root():
@@ -77,44 +112,24 @@ def read_root():
 async def read_incomes(
     db: db_dependency,
     current_user: User = Depends(get_current_user),
+    is_monthly: Optional[bool] = None,
+    category: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ):
-    # Check if the current_user is None (i.e., not authenticated)
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    # Retrieve incomes associated with the current user
-    incomes = (
-        db.query(Income)
-        .filter_by(user_id=current_user.id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-    return incomes or []
+    return get_financial_records(db, Income, current_user, is_monthly, category, skip, limit)
 
 
 @app.get("/expenses", response_model=List[ExpenseModel])
 async def read_expenses(
     db: db_dependency,
     current_user: User = Depends(get_current_user),
+    is_monthly: Optional[bool] = None,
+    category: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ):
-    # Check if the current_user is None (i.e., not authenticated)
-    if not current_user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    # Retrieve expenses associated with the current user
-    expenses = (
-        db.query(Expenses)
-        .filter_by(user_id=current_user.id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-    return expenses or []
+    return get_financial_records(db, Expenses, current_user, is_monthly, category, skip, limit)
 
 
 @app.get("/balance")

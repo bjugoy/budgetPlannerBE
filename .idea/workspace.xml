@@ -5,13 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="-">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/16420cb6-50b0-4cda-9dde-bb97c4e491cc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/16420cb6-50b0-4cda-9dde-bb97c4e491cc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/8f6496ca-e9d9-4ee8-8478-0c9f031bea4e.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/8f6496ca-e9d9-4ee8-8478-0c9f031bea4e/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/94531b39-6638-4089-9893-4c4173bf63f2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/94531b39-6638-4089-9893-4c4173bf63f2/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database_models/financials.py" beforeDir="false" afterPath="$PROJECT_DIR$/database_models/financials.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/db" beforeDir="false" afterPath="$PROJECT_DIR$/db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +73,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "dbrelationships",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/Users/Startklar/PycharmProjects/budgetPlannerBE/interpreter",
     "node.js.detected.package.eslint": "true",
