@@ -10,7 +10,7 @@ from typing import Annotated
 from database_models import base
 
 from models import *
-from database_models.financials import Income, Expenses
+from database_models.financials import Income, Expenses, User, DBSession
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -42,8 +42,6 @@ db_dependency = Annotated[Session, Depends(get_db)]
 # erstellt tabellen
 base.Base.metadata.create_all(bind=engine)
 
-fin_acc = FinancialAccount(balance=0.0)
-
 
 # avoid cors error
 app.add_middleware(
@@ -55,95 +53,153 @@ app.add_middleware(
 )
 
 
+def get_current_user(db: db_dependency, session_id: int = Cookie(None)):
+    if not session_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Query the database to find the session by session_id
+    db_session = db.query(DBSession).filter_by(session_id=session_id).first()
+
+    if db_session:
+        # Return the user associated with the session
+        return db.query(User).filter_by(username=db_session.username).first()
+    else:
+        raise HTTPException(status_code=401, detail="Invalid session ID")
+
+
+# ----- GET ENDPOINTS -----
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/incomes")
-async def read_incomes(db: db_dependency, skip: int = 0, limit: int = 100):
-    incomes = db.query(Income).offset(skip).limit(limit).all()
-    return {"incomes": incomes}
+@app.get("/incomes", response_model=List[IncomeModel])
+async def read_incomes(
+    db: db_dependency,
+    current_user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+):
+    # Check if the current_user is None (i.e., not authenticated)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Retrieve incomes associated with the current user
+    incomes = (
+        db.query(Income)
+        .filter_by(user_id=current_user.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    return incomes or []
 
 
+@app.get("/expenses", response_model=List[ExpenseModel])
+async def read_expenses(
+    db: db_dependency,
+    current_user: User = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+):
+    # Check if the current_user is None (i.e., not authenticated)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Retrieve expenses associated with the current user
+    expenses = (
+        db.query(Expenses)
+        .filter_by(user_id=current_user.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    return expenses or []
+
+
+@app.get("/balance")
+async def get_balance(db: db_dependency, current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Retrieve incomes and expenses associated with the current user
+    incomes = db.query(Income).filter_by(user_id=current_user.id).all()
+    expenses = db.query(Expenses).filter_by(user_id=current_user.id).all()
+
+    # Calculate the total income and total expense
+    total_income = sum(income.amount for income in incomes)
+    total_expense = sum(expense.amount for expense in expenses)
+
+    # Calculate the balance
+    balance = total_income - total_expense
+
+    return {"balance": balance}
+
+
+# ----- POST ENDPOINTS -----
 @app.post("/incomes", response_model=IncomeModel)
-async def create_income(income: IncomeBase, db: db_dependency):
-    db_income = Income(name=income.name,
-                       amount=income.amount,
-                       description=income.description,
-                       isMonthly=income.isMonthly,
-                       category=income.category.value)
+async def create_income(income: IncomeBase, db: db_dependency, current_user: User = Depends(get_current_user)):
+    db_income = Income(
+        name=income.name,
+        amount=income.amount,
+        description=income.description,
+        isMonthly=income.isMonthly,
+        category=income.category.value,
+        user_id=current_user.id # Set the user associated with the income
+    )
     db.add(db_income)
     db.commit()
     db.refresh(db_income)
     return db_income
 
 
-@app.get("/expenses")
-# skip = 0 --> keine Reihe wird übersprungen bei offset()
-async def read_expenses(db: db_dependency, skip: int = 0, limit: int = 100):
-    expenses = db.query(Expenses).offset(skip).limit(limit).all()
-    return {"expenses": expenses}
-
-
 @app.post("/expenses", response_model=ExpenseModel)
-async def create_expense(expense: ExpenseBase, db: db_dependency):
-    db_expense = Expenses(name=expense.name,
-                          amount=expense.amount,
-                          description=expense.description,
-                          isMonthly=expense.isMonthly,
-                          category=expense.category.value)
+async def create_expense(expense: ExpenseBase, db: db_dependency, current_user: User = Depends(get_current_user)):
+    db_expense = Expenses(
+        name=expense.name,
+        amount=expense.amount,
+        description=expense.description,
+        isMonthly=expense.isMonthly,
+        category=expense.category.value,
+        user_id=current_user.id  # Set the user associated with the expense
+    )
     db.add(db_expense)
     db.commit()
     db.refresh(db_expense)
     return db_expense
 
-
-@app.get("/balance")
-async def get_balance(db: db_dependency):
-    incomes = [income.amount for income in db.query(Income).all()]
-    expenses = [expense.amount for expense in db.query(Expenses).all()]
-
-    total_income = sum(incomes)
-    total_expense = sum(expenses)
-
-    balance = total_income - total_expense
-    return {"balance": balance}
-
-
 # ----- SESSION MANAGEMENT -----
-
-class Session(BaseModel):
-    session_id: int
-    username: str
-
-
-users = []
-sessions = []
 next_session_id = 1
 
 
-@app.get("/users", response_model=List[User])
-async def read_users():
+@app.get("/users", response_model=List[UserModel])
+async def read_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
     return users
 
 
-@app.get("/sessions", response_model=List[Session])
-async def read_sessions():
+@app.get("/sessions", response_model=List[SessionModel])
+async def read_sessions(db: Session = Depends(get_db)):
+    sessions = db.query(Session).all()
     return sessions
 
 
 @app.post("/login")
-async def login(authentication: Authentication):
+async def login(authentication: Authentication, db: db_dependency):
     global next_session_id
+    stored_user = db.query(User).filter_by(username=authentication.username).first()
 
-    stored_user = next((u for u in users if u.username == authentication.username), None)
+    if not stored_user:
+        raise HTTPException(status_code=401, detail="Username not found")
 
-    if not stored_user or not bcrypt.checkpw(authentication.password.encode('utf-8'),
-                                             stored_user.password.encode('utf-8')):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    plaintext_password = str(authentication.password).encode('utf-8')
+    hashed_password = str(stored_user.password).encode('utf-8')
 
-    existing_session = next((s for s in sessions if s.username == stored_user.username), None)
+    if not bcrypt.checkpw(plaintext_password,
+                          hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    existing_session = db.query(DBSession).filter_by(username=stored_user.username).first()
 
     if existing_session:
         response = {"message": "Login successful"}
@@ -151,21 +207,24 @@ async def login(authentication: Authentication):
         new_session_id = next_session_id
         next_session_id += 1
 
-        new_session = Session(session_id=new_session_id, username=stored_user.username)
-        sessions.append(new_session)
+        new_session = DBSession(session_id=new_session_id, username=stored_user.username)
+        db.add(new_session)
+        db.commit()
 
         response = {"message": "Login successful"}
 
-        response_headers = {"Set-Cookie": f"session_id={new_session_id}; HttpOnly"}
+        response_headers = {"Set-Cookie": f"session_id={new_session_id}; HttpOnly; SameSite=None; Secure"}
+
         return JSONResponse(content=response, headers=response_headers)
 
     return response
 
 
-@app.post("/register")
-async def register(user: User):
+@app.post("/register", response_model=UserModel)
+async def register(user: UserBase, db: Session = Depends(get_db)):
     # Check if username is already taken
-    if any(u.username == user.username for u in users):
+    existing_user = db.query(User).filter_by(username=user.username).first()
+    if existing_user:
         raise HTTPException(status_code=400, detail="Username already taken")
 
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
@@ -175,25 +234,29 @@ async def register(user: User):
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,
-        password=hashed_password,
-        accounts=[]
+        password=hashed_password.decode('utf-8')
     )
 
-    users.append(new_user)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
 
-    response = {"message": "Registration successful"}
-    return response
+    return new_user
 
 
 @app.post("/logout")
-async def logout(session_id: int = Cookie(None)):
+async def logout(db: db_dependency, session_id: int = Cookie(None)):
     if not session_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    session_index = next((i for i, s in enumerate(sessions) if s.session_id == session_id), None)
+    # Query the database to find the session by session_id
+    db_session = db.query(DBSession).filter_by(session_id=session_id).first()
 
-    if session_index is not None:
-        sessions.pop(session_index)
+    if db_session:
+        db.delete(db_session)
+        db.commit()
 
-    response = {"message": "Logged out successfully"}
-    return response
+        response = {"message": "Logged out successfully"}
+        return response
+    else:
+        raise HTTPException(status_code=401, detail="Invalid session ID")

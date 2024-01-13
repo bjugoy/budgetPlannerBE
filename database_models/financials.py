@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 
 from database_models.base import TimeStampedModel
 from database import Base
@@ -13,6 +14,9 @@ class Income(TimeStampedModel):
     description = Column(String(200))
     isMonthly = Column(Boolean, default=True)
     category = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to link income with user
+
+    user = relationship("User", back_populates="incomes")
 
 
 class Expenses(TimeStampedModel):
@@ -24,6 +28,9 @@ class Expenses(TimeStampedModel):
     description = Column(String(200))
     isMonthly = Column(Boolean, default=True)
     category = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to link expense with user
+
+    user = relationship("User", back_populates="expenses")
 
 
 class User(Base):
@@ -36,10 +43,13 @@ class User(Base):
     last_name = Column(String)
     password = Column(String)
 
+    incomes = relationship("Income", back_populates="user")
+    expenses = relationship("Expenses", back_populates="user")
 
-class Session(Base):
+
+class DBSession(Base):
     __tablename__ = "sessions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(Integer)
-
+    username = Column(String)

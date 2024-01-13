@@ -36,6 +36,7 @@ class IncomeBase(Entry):
 
 class IncomeModel(IncomeBase):
     id: int
+    user_id: int
 
     class Config:
         orm_mode = True
@@ -48,34 +49,39 @@ class ExpenseBase(Entry):
 
 class ExpenseModel(ExpenseBase):
     id: int
+    user_id: int
 
     class Config:
         orm_mode = True
 
 
-class FinancialAccount(BaseModel):
-    balance: float
-    expenses: List[ExpenseBase] = []
-    incomes: List[IncomeBase] = []
-
-    @staticmethod
-    def get_balance(expenses, incomes):
-
-        total_expenses = sum(expense.amount for expense in expenses)
-        total_incomes = sum(income.amount for income in incomes)
-
-        return total_incomes - total_expenses
-
-
-class User(BaseModel):
+class UserBase(BaseModel):
     username: str
     email: str
     first_name: str
     last_name: str
     password: str
-    accounts: List[str] = []
+
+
+class UserModel(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
 
 
 class Authentication(BaseModel):
     username: str
     password: str
+
+
+class SessionBase(BaseModel):
+    session_id: int
+    username: str
+
+
+class SessionModel(SessionBase):
+    id: int
+
+    class Config:
+        orm_mode = True
