@@ -45,6 +45,7 @@ class User(Base):
 
     incomes = relationship("Income", back_populates="user")
     expenses = relationship("Expenses", back_populates="user")
+    sessions = relationship("DBSession", back_populates="user")
 
 
 class DBSession(Base):
@@ -52,4 +53,6 @@ class DBSession(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(Integer)
-    username = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="sessions")

@@ -77,11 +77,11 @@ class Authentication(BaseModel):
 
 class SessionBase(BaseModel):
     session_id: int
-    username: str
 
 
 class SessionModel(SessionBase):
     id: int
+    user_id: int
 
     class Config:
         orm_mode = True

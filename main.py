@@ -1,7 +1,6 @@
 from urllib.parse import quote
 
-from fastapi import FastAPI, HTTPException, Depends, Cookie
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import FastAPI, HTTPException, Depends, Cookie, Response, Request
 import bcrypt
 from sqlalchemy import event, Engine
 from sqlalchemy.orm import Session
@@ -48,25 +47,29 @@ base.Base.metadata.create_all(bind=engine)
 # avoid cors error
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-def get_current_user(db: db_dependency, session_id: int = Cookie(None)):
-    if not session_id:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+def get_current_user(request: Request, db: Session = Depends(get_db)):
+    session_id = request.cookies.get("session_id")
+    print("Received Session ID:", session_id)  #for debugging
+    if session_id:
+        db_session = db.query(DBSession).filter_by(session_id=session_id).first()
+        print("DB Session:", db_session)  #for debugging
 
-    # Query the database to find the session by session_id
-    db_session = db.query(DBSession).filter_by(session_id=session_id).first()
+        if db_session:
+            user_id = db_session.user_id
+            user = db.query(User).filter_by(id=user_id).first()
+            print("User:", user)  #for debugging
 
-    if db_session:
-        # Return the user associated with the session
-        return db.query(User).filter_by(username=db_session.username).first()
-    else:
-        raise HTTPException(status_code=401, detail="Invalid session ID")
+            if user:
+                return user
+
+    return None
 
 
 def get_financial_records( # alle parameter
@@ -134,6 +137,7 @@ async def read_expenses(
 
 @app.get("/balance")
 async def get_balance(db: db_dependency, current_user: User = Depends(get_current_user)):
+    print("Current User:", current_user)
     if not current_user:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -149,6 +153,14 @@ async def get_balance(db: db_dependency, current_user: User = Depends(get_curren
     balance = total_income - total_expense
 
     return {"balance": balance}
+
+
+@app.get("/current_user")
+async def get_current_user_route(current_user: User = Depends(get_current_user)):
+    if current_user:
+        return {"username": current_user.username}
+    else:
+        raise HTTPException(status_code=401, detail="Not authenticated")
 
 
 # ----- POST ENDPOINTS -----
@@ -200,7 +212,7 @@ async def read_sessions(db: Session = Depends(get_db)):
 
 
 @app.post("/login")
-async def login(authentication: Authentication, db: db_dependency):
+async def login(response: Response, authentication: Authentication, db: db_dependency):
     global next_session_id
     stored_user = db.query(User).filter_by(username=authentication.username).first()
 
@@ -214,25 +226,33 @@ async def login(authentication: Authentication, db: db_dependency):
                           hashed_password):
         raise HTTPException(status_code=401, detail="Invalid password")
 
-    existing_session = db.query(DBSession).filter_by(username=stored_user.username).first()
+    existing_session = db.query(DBSession).filter_by(user_id=stored_user.id).first()
 
     if existing_session:
-        response = {"message": "Login successful"}
+        # Set the cookie in the response
+        response.set_cookie(key="session_id",
+                            value=str(existing_session.session_id),
+                            httponly=True,
+                            secure=True,
+                            samesite='none')
+        return {"message": "Login successful"}
     else:
-        new_session_id = next_session_id
+        new_session_id = next_session_id + 1000
         next_session_id += 1
 
-        new_session = DBSession(session_id=new_session_id, username=stored_user.username)
+        new_session = DBSession(session_id=new_session_id, user_id=stored_user.id)
         db.add(new_session)
         db.commit()
 
-        response = {"message": "Login successful"}
 
-        response_headers = {"Set-Cookie": f"session_id={new_session_id}; HttpOnly; SameSite=None; Secure"}
+        # Set the cookie in the response
+        response.set_cookie(key="session_id",
+                            value=str(new_session_id),
+                            httponly=True,
+                            secure=True,
+                            samesite='none')
 
-        return JSONResponse(content=response, headers=response_headers)
-
-    return response
+        return {"message": "Login successful"}
 
 
 @app.post("/register", response_model=UserModel)
@@ -271,7 +291,11 @@ async def logout(db: db_dependency, session_id: int = Cookie(None)):
         db.delete(db_session)
         db.commit()
 
-        response = {"message": "Logged out successfully"}
-        return response
+        max_age = 0
+
+        response_headers = {
+            "Set-Cookie": f"session_id=; HttpOnly; SameSite=None; Max-Age={max_age}",
+        }
+        return JSONResponse(content={"message": "Logout successful"}, headers=response_headers)
     else:
         raise HTTPException(status_code=401, detail="Invalid session ID")
