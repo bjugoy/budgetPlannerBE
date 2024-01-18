@@ -59,12 +59,10 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     print("Received Session ID:", session_id)  #for debugging
     if session_id:
         db_session = db.query(DBSession).filter_by(session_id=session_id).first()
-        print("DB Session:", db_session)  #for debugging
 
         if db_session:
             user_id = db_session.user_id
             user = db.query(User).filter_by(id=user_id).first()
-            print("User:", user)  #for debugging
 
             if user:
                 return user
@@ -105,7 +103,9 @@ def convert_category(category_str: str):
     return getattr(IncomeCategory, cleaned_category, None)
 
 
-# ----- GET ENDPOINTS -----
+"""                             ----- GET ENDPOINTS -----                                  """
+
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -163,7 +163,9 @@ async def get_current_user_route(current_user: User = Depends(get_current_user))
         raise HTTPException(status_code=401, detail="Not authenticated")
 
 
-# ----- POST ENDPOINTS -----
+""""                                 ----- POST ENDPOINTS -----                               """
+
+
 @app.post("/incomes", response_model=IncomeModel)
 async def create_income(income: IncomeBase, db: db_dependency, current_user: User = Depends(get_current_user)):
     db_income = Income(
@@ -195,7 +197,28 @@ async def create_expense(expense: ExpenseBase, db: db_dependency, current_user: 
     db.refresh(db_expense)
     return db_expense
 
-# ----- SESSION MANAGEMENT -----
+
+@app.delete("/incomes/{income_id}")
+async def delete_income(income_id: int, db: db_dependency, current_user: User = Depends(get_current_user)):
+    income = db.query(Income).filter_by(id=income_id, user_id=current_user.id).first()
+    if income:
+        db.delete(income)
+        db.commit()
+        return {"message": "Income deleted successfully"}
+    raise HTTPException(status_code=404, detail="Income not found")
+
+
+@app.delete("/expenses/{expense_id}")
+async def delete_expense(expense_id: int, db: db_dependency, current_user: User = Depends(get_current_user)):
+    expense = db.query(Expenses).filter_by(id=expense_id, user_id=current_user.id).first()
+    if expense:
+        db.delete(expense)
+        db.commit()
+        return {"message": "Expense deleted successfully"}
+    raise HTTPException(status_code=404, detail="Expense not found")
+
+
+"""                                 ----- SESSION MANAGEMENT -----                               """
 next_session_id = 1
 
 
@@ -244,7 +267,6 @@ async def login(response: Response, authentication: Authentication, db: db_depen
         db.add(new_session)
         db.commit()
 
-
         # Set the cookie in the response
         response.set_cookie(key="session_id",
                             value=str(new_session_id),
@@ -280,7 +302,7 @@ async def register(user: UserBase, db: Session = Depends(get_db)):
 
 
 @app.post("/logout")
-async def logout(db: db_dependency, session_id: int = Cookie(None)):
+async def logout(response: Response, db: db_dependency, session_id: int = Cookie(None)):
     if not session_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -291,11 +313,11 @@ async def logout(db: db_dependency, session_id: int = Cookie(None)):
         db.delete(db_session)
         db.commit()
 
-        max_age = 0
+        response.delete_cookie("session_id",
+                               httponly=True,
+                               secure=True,
+                               samesite='none')
 
-        response_headers = {
-            "Set-Cookie": f"session_id=; HttpOnly; SameSite=None; Max-Age={max_age}",
-        }
-        return JSONResponse(content={"message": "Logout successful"}, headers=response_headers)
+        return {"message": "Login successful"}
     else:
         raise HTTPException(status_code=401, detail="Invalid session ID")
