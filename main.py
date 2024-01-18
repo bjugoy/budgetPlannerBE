@@ -197,6 +197,8 @@ async def create_expense(expense: ExpenseBase, db: db_dependency, current_user: 
     db.refresh(db_expense)
     return db_expense
 
+"""                                 DELETE ENDPOINTS                                   """
+
 
 @app.delete("/incomes/{income_id}")
 async def delete_income(income_id: int, db: db_dependency, current_user: User = Depends(get_current_user)):

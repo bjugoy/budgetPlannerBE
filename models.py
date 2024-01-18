@@ -1,6 +1,7 @@
 from enum import Enum
 from pydantic import BaseModel
 from typing import List, Optional
+import datetime
 
 
 class Entry(BaseModel):
@@ -32,6 +33,10 @@ class ExpenseCategory(Enum):
 class IncomeBase(Entry):
     isMonthly: bool
     category: Optional[IncomeCategory] = None
+    date: Optional[datetime] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class IncomeModel(IncomeBase):
@@ -45,6 +50,10 @@ class IncomeModel(IncomeBase):
 class ExpenseBase(Entry):
     isMonthly: bool
     category: Optional[ExpenseCategory] = None
+    date: Optional[datetime] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ExpenseModel(ExpenseBase):

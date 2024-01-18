@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey
+import datetime
+
+from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
 from database_models.base import TimeStampedModel
@@ -14,6 +16,7 @@ class Income(TimeStampedModel):
     description = Column(String(200))
     isMonthly = Column(Boolean, default=True)
     category = Column(String)
+    date = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
     user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to link income with user
 
     user = relationship("User", back_populates="incomes")
@@ -28,6 +31,7 @@ class Expenses(TimeStampedModel):
     description = Column(String(200))
     isMonthly = Column(Boolean, default=True)
     category = Column(String)
+    date = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
     user_id = Column(Integer, ForeignKey("users.id"))  # Foreign key to link expense with user
 
     user = relationship("User", back_populates="expenses")
