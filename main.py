@@ -95,14 +95,6 @@ def get_financial_records( # alle parameter
     return records or []
 
 
-def convert_category(category_str: str):
-    # Replace spaces with underscores and convert to uppercase
-    cleaned_category = category_str.replace(" ", "_").upper()
-
-    # Use getattr to get the corresponding enum value
-    return getattr(IncomeCategory, cleaned_category, None)
-
-
 """                             ----- GET ENDPOINTS -----                                  """
 
 
@@ -153,6 +145,16 @@ async def get_balance(db: db_dependency, current_user: User = Depends(get_curren
     balance = total_income - total_expense
 
     return {"balance": balance}
+
+
+@app.get("/income-categories")
+def get_income_categories():
+    return [category.value for category in IncomeCategory]
+
+
+@app.get("/expense-categories")
+def get_income_categories():
+    return [category.value for category in ExpenseCategory]
 
 
 @app.get("/current_user")
