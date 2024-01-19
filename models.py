@@ -3,6 +3,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 import datetime
 
+"""Bases ---> Data for requests
+   Models ---> Data for response
+"""
+
 
 class Entry(BaseModel):
     name: str

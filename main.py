@@ -176,6 +176,7 @@ async def create_income(income: IncomeBase, db: db_dependency, current_user: Use
         description=income.description,
         isMonthly=income.isMonthly,
         category=income.category.value,
+        date=income.date,
         user_id=current_user.id # Set the user associated with the income
     )
     db.add(db_income)
@@ -192,6 +193,7 @@ async def create_expense(expense: ExpenseBase, db: db_dependency, current_user: 
         description=expense.description,
         isMonthly=expense.isMonthly,
         category=expense.category.value,
+        date=expense.date,
         user_id=current_user.id  # Set the user associated with the expense
     )
     db.add(db_expense)
@@ -314,8 +316,6 @@ async def logout(response: Response, db: db_dependency, session_id: int = Cookie
     db_session = db.query(DBSession).filter_by(session_id=session_id).first()
 
     if db_session:
-        db.delete(db_session)
-        db.commit()
 
         response.delete_cookie("session_id",
                                httponly=True,
