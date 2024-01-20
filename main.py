@@ -15,6 +15,10 @@ from database_models.financials import Income, Expenses, User, DBSession
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from typing import List, Tuple
+
+from sqlalchemy import func
+
 app = FastAPI()
 
 
@@ -92,7 +96,44 @@ def get_financial_records( # alle parameter
 
     # Apply offset and limit
     records = query.offset(skip).limit(limit).all()
-    return records or []
+    records_dict_list = [
+        {
+            **record.__dict__,
+            'date': record.date.strftime('%Y-%m-%d')
+        }
+        for record in records
+    ]
+    return records_dict_list or []
+
+def get_expense_records(
+    db: db_dependency,
+    current_user: User,
+    is_monthly: Optional[bool] = None,
+    category: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Query for expense records
+    query = db.query(Expenses).filter_by(user_id=current_user.id)
+    if is_monthly is not None:
+        query = query.filter_by(isMonthly=is_monthly)
+
+    if category:
+        query = query.filter_by(category=category)
+
+    # Apply offset and limit
+    records = query.offset(skip).limit(limit).all()
+    records_dict_list = [
+        {
+            **record.__dict__,
+            'date': record.date.strftime('%Y-%m-%d')
+        }
+        for record in records
+    ]
+    return records_dict_list or []
 
 
 """                             ----- GET ENDPOINTS -----                                  """
@@ -145,17 +186,33 @@ async def get_balance(db: db_dependency, current_user: User = Depends(get_curren
     balance = total_income - total_expense
 
     return {"balance": balance}
-
-
 @app.get("/income-categories")
 def get_income_categories():
     return [category.value for category in IncomeCategory]
 
+@app.get("/income-categories-with-amounts", response_model=List[Tuple[str, float]])
+def get_income_categories_with_amounts(db: db_dependency, current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Retrieve incomes associated with the current user, grouped by category and sum the amounts
+    income_categories = db.query(Income.category, func.sum(Income.amount)).filter_by(user_id=current_user.id).group_by(Income.category).all()
+
+    return income_categories
 
 @app.get("/expense-categories")
 def get_income_categories():
     return [category.value for category in ExpenseCategory]
 
+@app.get("/expense-categories-with-amounts", response_model=List[Tuple[str, float]])
+def get_expense_categories_with_amounts(db: db_dependency, current_user: User = Depends(get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    # Retrieve expenses associated with the current user, grouped by category and sum the amounts
+    expense_categories = db.query(Expenses.category, func.sum(Expenses.amount)).filter_by(user_id=current_user.id).group_by(Expenses.category).all()
+
+    return expense_categories
 
 @app.get("/current_user")
 async def get_current_user_route(current_user: User = Depends(get_current_user)):
