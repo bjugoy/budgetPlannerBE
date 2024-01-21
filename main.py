@@ -331,6 +331,7 @@ async def login(response: Response, authentication: Authentication, db: db_depen
                         samesite='none')
     return {"message": "Login successful"}
 
+
 @app.post("/register", response_model=UserModel)
 async def register(user: UserBase, db: Session = Depends(get_db)):
     # Check if username is already taken
@@ -356,7 +357,7 @@ async def register(user: UserBase, db: Session = Depends(get_db)):
 
 
 @app.post("/logout")
-async def logout(response: Response, db: db_dependency, session_id: int = Cookie(None)):
+async def logout(response: Response, db: db_dependency, session_id: str = Cookie(None)):
     if not session_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
