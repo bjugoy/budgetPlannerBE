@@ -56,7 +56,7 @@ class DBSession(Base):
     __tablename__ = "sessions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(Integer)
+    session_id = Column(String, unique=True) #james
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="sessions")

@@ -19,6 +19,8 @@ from typing import List, Tuple
 
 from sqlalchemy import func
 
+import uuid #j
+
 app = FastAPI()
 
 
@@ -46,6 +48,9 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 # erstellt tabellen
 base.Base.metadata.create_all(bind=engine)
+
+def generate_session_id(): #j
+    return uuid.uuid4()
 
 
 # avoid cors error
@@ -312,33 +317,19 @@ async def login(response: Response, authentication: Authentication, db: db_depen
                           hashed_password):
         raise HTTPException(status_code=401, detail="Invalid password")
 
-    existing_session = db.query(DBSession).filter_by(user_id=stored_user.id).first()
+    new_session_id = str(generate_session_id())
 
-    if existing_session:
-        # Set the cookie in the response
-        response.set_cookie(key="session_id",
-                            value=str(existing_session.session_id),
-                            httponly=True,
-                            secure=True,
-                            samesite='none')
-        return {"message": "Login successful"}
-    else:
-        new_session_id = next_session_id + 1000
-        next_session_id += 1
+    new_session = DBSession(session_id = new_session_id, user_id =stored_user.id) #j
+    db.add(new_session)
+    db.commit()
 
-        new_session = DBSession(session_id=new_session_id, user_id=stored_user.id)
-        db.add(new_session)
-        db.commit()
-
-        # Set the cookie in the response
-        response.set_cookie(key="session_id",
-                            value=str(new_session_id),
-                            httponly=True,
-                            secure=True,
-                            samesite='none')
-
-        return {"message": "Login successful"}
-
+    # Set the cookie in the response
+    response.set_cookie(key="session_id",
+                        value= new_session_id,
+                        httponly=True,
+                        secure=True,
+                        samesite='none')
+    return {"message": "Login successful"}
 
 @app.post("/register", response_model=UserModel)
 async def register(user: UserBase, db: Session = Depends(get_db)):
