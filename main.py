@@ -308,7 +308,7 @@ async def login(response: Response, authentication: Authentication, db: db_depen
     stored_user = db.query(User).filter_by(username=authentication.username).first()
 
     if not stored_user:
-        raise HTTPException(status_code=401, detail="Username not found")
+        raise HTTPException(status_code=401, detail="Email not found")
 
     plaintext_password = str(authentication.password).encode('utf-8')
     hashed_password = str(stored_user.password).encode('utf-8')
@@ -317,19 +317,32 @@ async def login(response: Response, authentication: Authentication, db: db_depen
                           hashed_password):
         raise HTTPException(status_code=401, detail="Invalid password")
 
-    new_session_id = str(generate_session_id())
+    existing_session = db.query(DBSession).filter_by(user_id=stored_user.id).first()
 
-    new_session = DBSession(session_id = new_session_id, user_id =stored_user.id) #j
-    db.add(new_session)
-    db.commit()
+    if existing_session:
+        # Set the cookie in the response
+        response.set_cookie(key="session_id",
+                            value=str(existing_session.session_id),
+                            httponly=True,
+                            secure=True,
+                            samesite='none')
+        return {"message": "Login successful"}
+    else:
+        new_session_id = str(generate_session_id())
 
-    # Set the cookie in the response
-    response.set_cookie(key="session_id",
-                        value= new_session_id,
-                        httponly=True,
-                        secure=True,
-                        samesite='none')
-    return {"message": "Login successful"}
+        new_session = DBSession(session_id=new_session_id, user_id=stored_user.id)  # j
+        db.add(new_session)
+        db.commit()
+
+        # Set the cookie in the response
+        response.set_cookie(key="session_id",
+                            value=new_session_id,
+                            httponly=True,
+                            secure=True,
+                            samesite='none')
+        return {"message": "Login successful"}
+
+
 
 
 @app.post("/register", response_model=UserModel)

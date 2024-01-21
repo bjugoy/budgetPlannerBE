@@ -4,18 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="- get categories endpoints added">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/16420cb6-50b0-4cda-9dde-bb97c4e491cc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/16420cb6-50b0-4cda-9dde-bb97c4e491cc/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/1ff0a7bd-83ea-4b9c-b9e4-3f2b44dba319.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/1ff0a7bd-83ea-4b9c-b9e4-3f2b44dba319/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ae5fec0a-42c2-4f7f-a2a8-2293505cee5c.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/ae5fec0a-42c2-4f7f-a2a8-2293505cee5c/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/cca7ed66-af27-47ee-8bef-5ccd198778c5.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/cca7ed66-af27-47ee-8bef-5ccd198778c5/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/f989eccb-b6a9-43e9-984d-53ec54c58ac7.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/f989eccb-b6a9-43e9-984d-53ec54c58ac7/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/db" beforeDir="false" />
+    <list default="true" id="738ef8d1-8b84-4154-b26b-55113f43bb44" name="Changes" comment="- logout corrected">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db" beforeDir="false" afterPath="$PROJECT_DIR$/db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -245,7 +238,15 @@
       <option name="project" value="LOCAL" />
       <updated>1705614205140</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="- logout corrected">
+      <option name="closed" value="true" />
+      <created>1705847480867</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1705847480867</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -285,7 +286,8 @@
     <MESSAGE value="- delete incomes and expenses added" />
     <MESSAGE value="- date attribute for income and expenses added" />
     <MESSAGE value="- get categories endpoints added" />
-    <option name="LAST_COMMIT_MESSAGE" value="- get categories endpoints added" />
+    <MESSAGE value="- logout corrected" />
+    <option name="LAST_COMMIT_MESSAGE" value="- logout corrected" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/budgetPlannerBE$base.coverage" NAME="base Coverage Results" MODIFIED="1703680932067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/database_models" />
