@@ -84,7 +84,7 @@ class UserModel(UserBase):
 
 
 class Authentication(BaseModel):
-    username: str
+    login: str #j
     password: str
 
 
