@@ -305,7 +305,8 @@ async def read_sessions(db: Session = Depends(get_db)):
 @app.post("/login")
 async def login(response: Response, authentication: Authentication, db: db_dependency):
     global next_session_id
-    stored_user = db.query(User).filter_by(username=authentication.username).first()
+    stored_user = db.query(User).filter((User.username == authentication.login) |
+    (User.email == authentication.login)).first()
 
     if not stored_user:
         raise HTTPException(status_code=401, detail="Email not found")

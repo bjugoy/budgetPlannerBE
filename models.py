@@ -83,8 +83,8 @@ class UserModel(UserBase):
         orm_mode = True
 
 
-class Authentication(BaseModel): #
-    username: str
+class Authentication(BaseModel):
+    login: str #j
     password: str
 
 
